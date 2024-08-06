@@ -2,10 +2,6 @@ import { View, Text, Image, StyleSheet, Pressable } from "react-native";
 import { useLocalSearchParams, Stack, useRouter } from "expo-router";
 import products from "@assets/data/products";
 import { defaultTacoImage } from "@components/ProductListItem";
-import { useState } from "react";
-import Button from "@components/Button";
-import { useCart } from "src/providers/CartProvider";
-import { PizzaSize } from "src/types";
 
 const ProductDetailsScreen = () => {
   const { id } = useLocalSearchParams();
