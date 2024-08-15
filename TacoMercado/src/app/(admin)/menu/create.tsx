@@ -1,10 +1,20 @@
 import Button from "@components/Button";
 import { defaultTacoImage } from "@components/ProductListItem";
-import { useEffect, useState } from "react";
 import Colors from "src/constants/Colors";
+import { useEffect, useState } from "react";
 import { View, Text, StyleSheet, TextInput, Image, Alert } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import {
+  useDeleteProduct,
+  useInsertProduct,
+  useProduct,
+  useUpdateProduct,
+} from "src/api/products";
+import * as FileSystem from "expo-file-system";
+import { randomUUID } from "expo-crypto";
+import { supabase } from "src/lib/supabase";
+import { decode } from "base64-arraybuffer";
 
 const CreateProductScreen = () => {
   const [name, setName] = useState("");
@@ -17,6 +27,21 @@ const CreateProductScreen = () => {
     typeof idString === "string" ? idString : idString?.[0]
   );
   const isUpdating = !!idString;
+
+  const { mutate: insertProduct } = useInsertProduct();
+  const { mutate: updateProduct } = useUpdateProduct();
+  const { data: updatingProduct } = useProduct(id);
+  const { mutate: deleteProduct } = useDeleteProduct();
+
+  const router = useRouter();
+
+  useEffect(() => {
+    if (updatingProduct) {
+      setName(updatingProduct.name);
+      setPrice(updatingProduct.price.toString());
+      setImage(updatingProduct.image);
+    }
+  }, [updatingProduct]);
 
   const resetFields = () => {
     setName("");
@@ -47,6 +72,29 @@ const CreateProductScreen = () => {
     } else {
       onCreate();
     }
+  };
+
+  const onCreate = async () => {
+    if (!validateInput()) {
+      return;
+    }
+
+    const imagePath = await uploadImage();
+    console.log("hello", imagePath);
+
+    if (!imagePath) {
+      return;
+    }
+    // Save in the database
+    insertProduct(
+      { name, price: parseFloat(price), image: imagePath },
+      {
+        onSuccess: () => {
+          resetFields();
+          router.back();
+        },
+      }
+    );
   };
 
   const onUpdate = async () => {
@@ -82,7 +130,12 @@ const CreateProductScreen = () => {
   };
 
   const onDelete = () => {
-    console.warn("DELETE");
+    deleteProduct(id, {
+      onSuccess: () => {
+        resetFields();
+        router.replace("/(admin)");
+      },
+    });
   };
 
   const confirmDelete = () => {
@@ -96,6 +149,34 @@ const CreateProductScreen = () => {
         onPress: onDelete,
       },
     ]);
+  };
+
+  const uploadImage = async () => {
+    console.log("IMAGE: ", image);
+    if (!image?.startsWith("file://")) {
+      return;
+    }
+
+    try {
+      const base64 = await FileSystem.readAsStringAsync(image, {
+        encoding: "base64",
+      });
+      console.log("BASE ^$");
+      const filePath = `${randomUUID()}.png`;
+      const contentType = "image/png";
+
+      const { data, error } = await supabase.storage
+        .from("product-images")
+        .upload(filePath, decode(base64), { contentType });
+
+      console.log("oh no: ", error, data);
+
+      if (data) {
+        return data.path;
+      }
+    } catch (e) {
+      console.debug("ERRORL ", e);
+    }
   };
 
   return (

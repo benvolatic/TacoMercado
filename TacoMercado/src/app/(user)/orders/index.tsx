@@ -10,9 +10,8 @@ export default function OrdersScreen() {
       <FlatList
         data={orders}
         renderItem={({ item }) => <OrderListItem order={item} />}
-        numColumns={2}
+        numColumns={1}
         contentContainerStyle={{ gap: 10, padding: 10 }}
-        columnWrapperStyle={{ gap: 10 }}
       />
     </>
   );

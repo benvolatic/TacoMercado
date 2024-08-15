@@ -13,13 +13,13 @@ const index = () => {
     return <ActivityIndicator />;
   }
 
-  if (!session) {
-    return <Redirect href={"/sign-in"} />;
-  }
+  // if (!session) {
+  //   return <Redirect href={"/sign-in"} />;
+  // }
 
-  if (!isAdmin) {
-    return <Redirect href={"/(user)"} />;
-  }
+  // if (!isAdmin) {
+  //   return <Redirect href={"/(user)"} />;
+  // }
 
   console.log(session);
   return (

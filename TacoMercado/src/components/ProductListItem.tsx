@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View, Image, Pressable } from "react-native";
 import Colors from "../constants/Colors";
-import { Product } from "../types";
 import { useSegments } from "expo-router";
+import { Tables } from "src/database.types";
 
 import { Link } from "expo-router";
 
@@ -9,7 +9,7 @@ export const defaultTacoImage =
   "https://notjustdev-dummy.s3.us-east-2.amazonaws.com/food/default.png";
 
 type ProductListItemProps = {
-  product: Product;
+  product: Tables<"products">;
 };
 
 const ProductListItem = ({ product }: ProductListItemProps) => {
@@ -42,7 +42,7 @@ const styles = StyleSheet.create({
     maxWidth: "50%",
   },
   title: {
-    color: Colors.dark.text,
+    color: "black",
     fontSize: 20,
     fontWeight: 600,
   },

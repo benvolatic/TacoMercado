@@ -1,4 +1,11 @@
-import { View, Text, Image, StyleSheet, Pressable } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  Pressable,
+  ActivityIndicator,
+} from "react-native";
 import { useLocalSearchParams, Stack, useRouter } from "expo-router";
 import products from "@assets/data/products";
 import { defaultTacoImage } from "@components/ProductListItem";
@@ -6,14 +13,27 @@ import { Link } from "expo-router";
 import { FontAwesome } from "@expo/vector-icons";
 import Colors from "src/constants/Colors";
 import { useCart } from "src/providers/CartProvider";
+import { useProduct } from "src/api/products";
 
 const ProductDetailsScreen = () => {
   const { id } = useLocalSearchParams();
+
   const { addItem } = useCart();
 
   const router = useRouter();
 
-  const product = products.find((p) => p.id.toString() === id);
+  const {
+    data: product,
+    isLoading,
+    error,
+  } = useProduct(parseInt(typeof id === "string" ? id : id[0]));
+
+  if (isLoading) {
+    return <ActivityIndicator />;
+  }
+  if (error || !product) {
+    return <Text>Failed to fetch product</Text>;
+  }
 
   if (!product) {
     return <Text>Product Not Found</Text>;

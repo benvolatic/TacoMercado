@@ -17,9 +17,11 @@ const OrderItemListItem = ({ item }: OrderItemListItemProps) => {
         resizeMode="contain"
       />
       <View style={{ flex: 1 }}>
-        <Text style={styles.title}>{item.products.name}</Text>
+        <Text style={styles.title}>{100}</Text>
         <View style={styles.subtitleContainer}>
-          <Text style={styles.price}>${item.products.price.toFixed(2)}</Text>
+          <Text style={styles.price}>
+            ${item.products.price.toFixed(2)} cat
+          </Text>
           <Text>Size: {item.size}</Text>
         </View>
       </View>
@@ -46,6 +48,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   title: {
+    color: "black",
     fontWeight: "500",
     fontSize: 16,
     marginBottom: 5,

@@ -5,12 +5,16 @@ import { supabase } from "src/lib/supabase";
 
 type AuthData = {
   session: Session | null;
+  profile: any;
   loading: boolean;
+  isAdmin: boolean;
 };
 
 const AuthContext = createContext<AuthData>({
   session: null,
   loading: true,
+  profile: null,
+  isAdmin: false,
 });
 
 export default function AuthProvider({ children }: PropsWithChildren) {
@@ -43,10 +47,10 @@ export default function AuthProvider({ children }: PropsWithChildren) {
     });
   }, []);
 
-  console.log(profile);
-
   return (
-    <AuthContext.Provider value={{ session, loading }}>
+    <AuthContext.Provider
+      value={{ session, loading, profile, isAdmin: profile?.group === "ADMIN" }}
+    >
       {children}
     </AuthContext.Provider>
   );
