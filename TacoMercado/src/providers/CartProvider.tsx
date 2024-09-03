@@ -1,6 +1,9 @@
 import { createContext, useContext, PropsWithChildren, useState } from "react";
 import { CartItem, Tables } from "src/types";
 import { randomUUID } from "expo-crypto";
+import { useInsertOrder } from "src/api/orders";
+import { useRouter } from "expo-router";
+import { useInsertOrderItems } from "src/api/order-items";
 
 type Product = Tables<"products">;
 
@@ -9,6 +12,7 @@ type CartType = {
   addItem: (product: Product, size: CartItem["size"]) => void;
   updateQuantity: (itemId: string, amount: -1 | 1) => void;
   total: number;
+  checkout: () => void;
 };
 
 const CartContext = createContext<CartType>({
@@ -16,10 +20,15 @@ const CartContext = createContext<CartType>({
   addItem: () => {},
   updateQuantity: () => {},
   total: 0,
+  checkout: () => {},
 });
 
 const CartProvider = ({ children }: PropsWithChildren) => {
   const [items, setItems] = useState<CartItem[]>([]);
+
+  const { mutate: insertOrder } = useInsertOrder();
+  const { mutate: insertOrderItems } = useInsertOrderItems();
+  const router = useRouter();
 
   const addItem = (product: Product, size: CartItem["size"]) => {
     const existingItem = items.find(
@@ -58,8 +67,45 @@ const CartProvider = ({ children }: PropsWithChildren) => {
     0
   );
 
+  const clearCart = () => {
+    setItems([]);
+  };
+
+  const checkout = () => {
+    console.warn("Checkout");
+    insertOrder(
+      { total },
+      {
+        onSuccess: saveOrderItems,
+      }
+    );
+    console.log("oh no");
+  };
+
+  const saveOrderItems = (order: Tables<"orders">) => {
+    const orderItems = items.map((cartItem) => ({
+      order_id: order.id,
+      product_id: cartItem.product_id,
+      quantity: cartItem.quantity,
+      size: cartItem.size,
+    }));
+
+    insertOrderItems(orderItems, {
+      onSuccess() {
+        clearCart();
+        router.push(`/(user)/orders/${order.id}` as any);
+        console.log("oh no2r");
+      },
+      onError(error) {
+        console.error("Error inserting order items:", error);
+      },
+    });
+  };
+
   return (
-    <CartContext.Provider value={{ items, addItem, updateQuantity, total }}>
+    <CartContext.Provider
+      value={{ items, addItem, updateQuantity, total, checkout }}
+    >
       {children}
     </CartContext.Provider>
   );

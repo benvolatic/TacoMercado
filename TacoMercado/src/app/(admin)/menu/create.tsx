@@ -11,6 +11,7 @@ import {
   useProduct,
   useUpdateProduct,
 } from "src/api/products";
+
 import * as FileSystem from "expo-file-system";
 import { randomUUID } from "expo-crypto";
 import { supabase } from "src/lib/supabase";
@@ -80,12 +81,7 @@ const CreateProductScreen = () => {
     }
 
     const imagePath = await uploadImage();
-    console.log("hello", imagePath);
 
-    if (!imagePath) {
-      return;
-    }
-    // Save in the database
     insertProduct(
       { name, price: parseFloat(price), image: imagePath },
       {
@@ -126,6 +122,9 @@ const CreateProductScreen = () => {
 
     if (!result.canceled) {
       setImage(result.assets[0].uri);
+    } else {
+      console.log("Image picking was canceled");
+      return null;
     }
   };
 
@@ -152,30 +151,24 @@ const CreateProductScreen = () => {
   };
 
   const uploadImage = async () => {
-    console.log("IMAGE: ", image);
     if (!image?.startsWith("file://")) {
       return;
     }
 
-    try {
-      const base64 = await FileSystem.readAsStringAsync(image, {
-        encoding: "base64",
-      });
-      console.log("BASE ^$");
-      const filePath = `${randomUUID()}.png`;
-      const contentType = "image/png";
+    const base64 = await FileSystem.readAsStringAsync(image, {
+      encoding: "base64",
+    });
+    const filePath = `${randomUUID()}.png`;
+    const contentType = "image/png";
 
-      const { data, error } = await supabase.storage
-        .from("product-images")
-        .upload(filePath, decode(base64), { contentType });
+    const { data, error } = await supabase.storage
+      .from("product-images")
+      .upload(filePath, decode(base64), { contentType });
 
-      console.log("oh no: ", error, data);
+    if (error) throw error;
 
-      if (data) {
-        return data.path;
-      }
-    } catch (e) {
-      console.debug("ERRORL ", e);
+    if (data) {
+      return data.path;
     }
   };
 

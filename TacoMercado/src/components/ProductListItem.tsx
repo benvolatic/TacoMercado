@@ -4,6 +4,7 @@ import { useSegments } from "expo-router";
 import { Tables } from "src/database.types";
 
 import { Link } from "expo-router";
+import RemoteImage from "./RemoteImage";
 
 export const defaultTacoImage =
   "https://notjustdev-dummy.s3.us-east-2.amazonaws.com/food/default.png";
@@ -14,13 +15,13 @@ type ProductListItemProps = {
 
 const ProductListItem = ({ product }: ProductListItemProps) => {
   const segments = useSegments();
-  console.log;
 
   return (
     <Link href={`/${segments[0]}/menu/${product.id}`} asChild>
       <Pressable style={styles.container}>
-        <Image
-          source={{ uri: product.image || defaultTacoImage }}
+        <RemoteImage
+          fallback={defaultTacoImage}
+          path={product.image}
           style={styles.image}
           resizeMode="contain"
         />

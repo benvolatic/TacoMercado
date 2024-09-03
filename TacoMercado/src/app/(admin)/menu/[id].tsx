@@ -14,6 +14,7 @@ import { FontAwesome } from "@expo/vector-icons";
 import Colors from "src/constants/Colors";
 import { useCart } from "src/providers/CartProvider";
 import { useProduct } from "src/api/products";
+import RemoteImage from "@components/RemoteImage";
 
 const ProductDetailsScreen = () => {
   const { id } = useLocalSearchParams();
@@ -62,8 +63,9 @@ const ProductDetailsScreen = () => {
       />
       <Stack.Screen options={{ title: product?.name }} />
 
-      <Image
-        source={{ uri: product.image || defaultTacoImage }}
+      <RemoteImage
+        path={product?.image}
+        fallback={defaultTacoImage}
         style={styles.image}
       />
       <Text style={styles.title}>{product.name}</Text>
